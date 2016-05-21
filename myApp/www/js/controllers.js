@@ -1,7 +1,7 @@
 angular.module('starter.controllers', [])
 
 .constant('ApiEndpoint', {
-    url: 'http://147.83.7.155:8080/api'
+    url: 'http://localhost:8080/api'
 })
 .controller('AppCtrl', function($scope, $ionicModal, $timeout) {
 
@@ -44,67 +44,139 @@ angular.module('starter.controllers', [])
   };
 })
 
-.controller('PlaylistsCtrl', function($scope) {
-  $scope.playlists = [
-    { title: 'Reggae', id: 1 },
-    { title: 'Chill', id: 2 },
-    { title: 'Dubstep', id: 3 },
-    { title: 'Indie', id: 4 },
-    { title: 'Rap', id: 5 },
-    { title: 'Cowbell', id: 6 }
-  ];
-})
 
-.controller('homeCtrl', function($scope, $stateParams) {
-    $scope.message = "¡Bienvenido!";
-  })
+.controller('homeCtrl', function($scope, $http, ApiEndpoint, $ionicPopup) {
+
+  $scope.message = "¡Bienvenido!";
+  $scope.newStudent = {};
+  $scope.selected = false;
+
+  // Función para registrar estudiante
+  $scope.registrarEstudiante = function() {
+    $http.post(ApiEndpoint.url + '/student', $scope.newStudent)
+      .success(function(data) {
+        $scope.newStudent = {}; // Borramos los datos del formulario
+        console.log('Registrado correctamente');
+        $scope.students = data;
+        var alertPopup = $ionicPopup.alert({
+          title: 'Información',
+          template: 'Registrado correctamente'
+        });
+      })
+      .error(function(data) {
+        console.log('Error: ' + data);
+        var alertPopup = $ionicPopup.alert({
+          title: 'Información',
+          template: 'Revisa el formulario'
+        });
+      });
+  };
+
+})
 
 
 .controller('subjectsCtrl', function($scope, $http, ApiEndpoint) {
-    $scope.message = "Página asignaturas";
-    $scope.subjects = {};
+  $scope.message = "Página asignaturas";
+  $scope.newSubject = {};
+  $scope.subjects = {};
 
-    // Obtenemos todas las asignaturas
-    $http.get(ApiEndpoint.url + '/subject').success(function(data) {
+  // Obtenemos todas las asignaturas
+  $http.get(ApiEndpoint.url + '/subject').success(function(data) {
+    $scope.subjects = data;
+    console.log('Get Data: ' + data);
+  })
+    .error(function(data) {
+      console.log('Error: ' + data);
+    });
+
+  // Añadir nueva asignatura
+  $scope.addSubject = function() {
+    $http.post(ApiEndpoint.url + '/subject', $scope.newSubject) // Enviamos la nueva asignatura (el nombre)
+      .success(function(data) {
+        $scope.newSubject = {}; // Borramos los datos del formulario
         $scope.subjects = data;
-        console.log('Get Data: ' + data);
       })
       .error(function(data) {
         console.log('Error: ' + data);
       });
+  };
+
+  // Función para eliminar asignatura
+  $scope.deleteSubject = function(id) {
+    $http.delete(ApiEndpoint.url + '/subject/' + id)
+      .success(function(data) {
+        $scope.newSubject = {};
+        $scope.subjects = data;
+        $scope.selected = false;
+        console.log('Asignatura eliminada correctamente');
+      })
+      .error(function(data) {
+        console.log('Error: ' + data);
+      });
+  };
 
 })
 
-.controller('subjectsDetailCtrl', function($scope, $http, ApiEndpoint, $state) {
+.controller('subjectsDetailCtrl', function($scope, $http, ApiEndpoint, $state, $ionicPopup) {
 
-    $scope.message = "Estudiantes matriculados";
-    $scope.subjectID = ($state.params.subjectId); //Obtenemos ID de la URI de subjectId
+  $scope.message = "Estudiantes matriculados";
+  $scope.updatedSubject = {};
+  $scope.studentsList = {};
+  $scope.subject = {};
+  $scope.subjectID = ($state.params.subjectId); //Obtenemos ID de la URI de subjectId
+  console.log($scope.subjectID);
+  var liststudents = [];
+
+  //Obtenemos detalle estudiante
+  $http.get(ApiEndpoint.url + '/subject/' + $scope.subjectID)
+    .success(function(data) {
+      $scope.subject = data;
+      console.log($scope.subject);
+
+      // Función para mostrar el nombre de usuario en vez de su ID
+      angular.forEach($scope.subject.students, function(student, key) {
+        //console.log("Alumnos inscritos en", $scope.subject.name, ":", student);
+          $http.get(ApiEndpoint.url + '/student/' + student)
+            .success(function(data) {
+              $scope.student = data;
+              liststudents.push($scope.student); //Añade nombre estudiante dentro de lista
+              $scope.studentsList = liststudents;
+              console.log("Nombre de alumnos en", $scope.subject.name, ":", $scope.studentsList);
+            })
+            .error(function(data) {
+              console.log('Error: ' + data);
+            });
+      });
+      // FIN función para mostrar el nombre de usuario en vez de su ID
+    })
+    .error(function(data) {
+      console.log('Error: ' + data);
+    });
+
+  // Función para añadir alumno a asignatura
+  $scope.addStudent = function() {
     console.log($scope.subjectID);
-
-    //Obtenemos detalle estudiante
-    $http.get(ApiEndpoint.url + '/subject/' + $scope.subjectID)
+    console.log($scope.newStudent);
+    $http.post(ApiEndpoint.url + '/subject/' + $scope.subjectID, $scope.updatedSubject)
       .success(function(data) {
         $scope.subject = data;
-        console.log($scope.subject);
+        $state.reload();
+        //location.reload();
+        console.log('Añadido correctamente a la asignatura');
+        //PopUp
+        var alertPopup = $ionicPopup.alert({
+          title: 'Información',
+          template: 'Añadido correctamente'
+        });
       })
       .error(function(data) {
         console.log('Error: ' + data);
-      });
-
-    // Función para eliminar estudiante
-    $scope.remove = function(id) {
-      $http.delete(ApiEndpoint.url + '/student/' + id)
-        .success(function(data) {
-          //$scope.newStudent = {};
-          //$scope.students = data;
-          //$scope.selected = false;
-          console.log("Estudiante", id, "eliminado correctamente.", data);
-          $state.go('app.students');
-        })
-        .error(function(data) {
-          console.log('Error: ' + data);
+        var alertPopup = $ionicPopup.alert({
+          title: 'Información',
+          template: 'Ese estudiante no existe'
         });
-    };
+      });
+  };
 
 })
 
