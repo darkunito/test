@@ -1,7 +1,7 @@
 angular.module('starter.controllers', [])
 
 .constant('ApiEndpoint', {
-    url: 'http://localhost:8080/api'
+    url: 'http://147.83.7.155:8080/api'
 })
 .controller('AppCtrl', function($scope, $ionicModal, $timeout) {
 
