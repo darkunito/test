@@ -1,7 +1,13 @@
 <ion-view view-title="Lista de asignaturas">
   <ion-content>
+    <div class="list list-inset">
+      <label class="item item-input">
+        <i class="icon ion-search placeholder-icon"></i>
+        <input type="text" placeholder="Buscar asignaturas por nombre..." ng-model="searchText">
+      </label>
+    </div>
     <ion-list>
-      <ion-item ng-repeat="subject in subjects"> <!--href="#/app/subjects/{{subject._id}}" ng-click="selectSubject(subject._id)" -->
+      <ion-item ng-repeat="subject in subjects | filter:searchText"> <!--href="#/app/subjects/{{subject._id}}" ng-click="selectSubject(subject._id)" -->
         <h1 style="text-align: center">{{subject.name}}</h1>
         <div class="button-bar">
           <a class="button" style="background-color: lightgreen" href="#/app/subjects/{{subject._id}}" ng-click="selectSubject(subject._id)">Ver estudiantes</a>

@@ -54,7 +54,7 @@ angular.module('starter', ['ionic', 'starter.controllers'])
       }
     })
     .state('app.studentsDetail', {
-      url: '/students/:studentId',
+      url: '/students/:studentId', //Le pasa la ID del estudiante
       cache: false,
       views: {
         'menuContent': {
