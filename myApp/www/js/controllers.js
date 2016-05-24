@@ -164,10 +164,19 @@ angular.module('starter.controllers', [])
         //location.reload();
         console.log('Añadido correctamente a la asignatura');
         //PopUp
-        var alertPopup = $ionicPopup.alert({
-          title: 'Información',
-          template: 'Añadido correctamente'
-        });
+        if ($scope.subject == null){
+          var alertPopup = $ionicPopup.alert({
+            title: 'Información',
+            template: 'Este usuario no existe o ya está en la lista'
+          });
+        }
+        else
+        {
+          var alertPopup = $ionicPopup.alert({
+            title: 'Información',
+            template: 'Añadido correctamente'
+          });
+        }
       })
       .error(function(data) {
         console.log('Error: ' + data);
